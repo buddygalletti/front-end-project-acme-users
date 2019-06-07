@@ -1,6 +1,9 @@
 <html>
   <head>
 <style>
+    a {
+        margin-right: 20px;
+    }
 </style>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -13,10 +16,12 @@
     <script type='text/babel'>
         const { HashRouter, Route, Link, NavLink } = ReactRouterDOM;
 
+        const Home = () => <div id='home'><h3>Welcome!!!</h3></div>
+
         const Nav = () => {
             return (
                 <div id='nav'>
-                    <Link to='/'>Home</Link>
+                    <Link to='/home'>Home</Link>
                     <Link to='/users'>Users</Link>
                 </div>
             )
@@ -76,11 +81,11 @@
                 const totalPages = Math.ceil(count / countPerPage);
                 const links = [];
                 const filters = [
-                    { text: 'First', value: 0 },
-                    { text: 'Prev', value: idx - 1 },
+                    { text: 'First', value: 0, disabled: currentPage*1 === 0 },
+                    { text: 'Prev', value: idx - 1, disabled: currentPage*1 === 0 },
                     { text: `${idx + 1}`, value: idx, disabled: true },
-                    { text: 'Next', value: idx + 1 },
-                    { text: 'Last', value: totalPages },
+                    { text: 'Next', value: idx + 1, disabled: currentPage*1 === (totalPages - 1) },
+                    { text: 'Last', value: totalPages - 1, disabled: currentPage*1 === (totalPages - 1) }
                 ]
 
                 for(let i = 0; i < totalPages; i++){
@@ -91,8 +96,7 @@
                 }
                 return (
                     <div>
-                        <div id='header'>
-                            <h1>Acme Users</h1>
+                        <div id='counts'>
                             <p>{`${count} Results. Page ${currentPage*1 + 1} of ${totalPages}`}</p>
                         </div>
                         <div id='buttons'>
@@ -130,7 +134,11 @@
             render() {
                 return (
                     <HashRouter>
+                        <div id='header'>
+                            <h1>Acme Users</h1>
+                        </div>
                         <Route path='/' component={ Nav }></Route>
+                        <Route path='/home' component={ Home }></Route>
                         <Route path='/users/:idx?' exact component={ Users }></Route>
                     </HashRouter>
                 )
