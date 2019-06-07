@@ -17,7 +17,7 @@
             return (
                 <div id='nav'>
                     <Link to='/'>Home</Link>
-                    <Link to='/users'>Users</Link> 
+                    <Link to='/users'>Users</Link>
                 </div>
             )
         }
@@ -56,7 +56,7 @@
                 //     { text: 'First', value: 0 },
                 //     { text: 'Prev', value: 0 },
                 //     { text: 'Next', value: 0 },
-                //     { text: 'Last', value: 0 }, 
+                //     { text: 'Last', value: 0 },
                 // ]
 
                 const countPerPage = 50;
@@ -71,8 +71,8 @@
                 return (
                     <div>
                         <div id='links'>
-                            { 
-                                links.map(link => <Link to={`users/${ link.idx ? link.idx : '' }`} key={ link.idx }>{ link.text }</Link>)
+                            {
+                                links.map(link => <Link to={`/users/${ link.idx ? link.idx : '' }`} key={ link.idx }>{ link.text }</Link>)
                             }
                         </div>
                         <div id='users'>
