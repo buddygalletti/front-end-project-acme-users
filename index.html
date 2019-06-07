@@ -1,0 +1,121 @@
+<html>
+  <head>
+<style>
+</style>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.0.0/react-router-dom.js'></script>
+  </head>
+  <body>
+    <div id='root'></div>
+    <script type='text/babel'>
+        const { HashRouter, Route, Link, NavLink } = ReactRouterDOM;
+
+        const Nav = () => {
+            return (
+                <div id='nav'>
+                    <Link to='/'>Home</Link>
+                    <Link to='/users'>Users</Link> 
+                </div>
+            )
+        }
+
+
+
+        class Users extends React.Component {
+            constructor() {
+                super();
+                this.state = {
+                    users: [],
+                    links: [],
+                    count: 0
+                }
+            }
+
+            async componentDidMount() {
+                const idx = this.props.match.params.idx || 0;
+                console.log(idx);
+                try {
+                    const res = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users/${idx}`)
+                    this.setState({
+                        count: res.data.count,
+                        users: res.data.users
+                    })
+                    console.log(this.state.users)
+                } catch (err) {
+                    console.error(err)
+                }
+            }
+
+            render() {
+                const idx = this.props.match.params.idx ? this.props.match.params.idx * 1 : 0;
+                const { users, count } = this.state;
+                // const filters = [
+                //     { text: 'First', value: 0 },
+                //     { text: 'Prev', value: 0 },
+                //     { text: 'Next', value: 0 },
+                //     { text: 'Last', value: 0 }, 
+                // ]
+
+                const countPerPage = 50;
+                const totalPages = Math.ceil(count / countPerPage);
+                const links = [];
+                for(let i = 0; i < totalPages; i++){
+                    links.push({
+                        idx: i,
+                        text: i + 1
+                    });
+                }
+                return (
+                    <div>
+                        <div id='links'>
+                            { 
+                                links.map(link => <Link to={`users/${ link.idx ? link.idx : '' }`} key={ link.idx }>{ link.text }</Link>)
+                            }
+                        </div>
+                        <div id='users'>
+                            <table>
+                                <tbody>
+                                    <tr><th>First Name</th><th>Last Name</th><th>Middle Name</th><th>Email</th></tr>
+                                    {
+                                        users.map(user => {
+                                            return (
+                                                <tr key={user.id}><td>{user.firstName}</td><td>{user.lastName}</td><td>{user.middleName}</td><td>{user.email}</td></tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        class App extends React.Component {
+            constructor() {
+                super();
+                this.state = {
+                    numUsers: 0
+                }
+            }
+            render() {
+                return (
+                    <HashRouter>
+                        <Route path='/' component={ Nav }></Route>
+                        <Route path='/users/:idx?' exact component={ Users }></Route>
+                    </HashRouter>
+                )
+            }
+        }
+
+
+
+
+        const root = document.querySelector('#root');
+        ReactDOM.render(<App />, root);
+    </script>
+  </body>
+</html>
