@@ -29,8 +29,27 @@
                 super();
                 this.state = {
                     users: [],
-                    links: [],
-                    count: 0
+                    count: 0,
+                    currentPage: 0
+                }
+            }
+
+            navigate = (value) => {
+                this.props.history.push(`/users${ value ? `/${value}`: ''}`);
+            }
+
+            async componentDidUpdate(prevProps) {
+                const idx = this.props.match.params.idx || 0;
+                if(prevProps.match.params.idx !== idx){
+                    try {
+                        const res = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users/${idx}`)
+                        this.setState({
+                            users: res.data.users,
+                            currentPage: idx
+                        })
+                    } catch (err) {
+                        console.error(err)
+                    }
                 }
             }
 
@@ -41,9 +60,9 @@
                     const res = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users/${idx}`)
                     this.setState({
                         count: res.data.count,
-                        users: res.data.users
+                        users: res.data.users,
+                        currentPage: idx
                     })
-                    console.log(this.state.users)
                 } catch (err) {
                     console.error(err)
                 }
@@ -51,17 +70,19 @@
 
             render() {
                 const idx = this.props.match.params.idx ? this.props.match.params.idx * 1 : 0;
-                const { users, count } = this.state;
-                // const filters = [
-                //     { text: 'First', value: 0 },
-                //     { text: 'Prev', value: 0 },
-                //     { text: 'Next', value: 0 },
-                //     { text: 'Last', value: 0 },
-                // ]
-
+                const { users, count, currentPage } = this.state;
+                const { navigate } = this;
                 const countPerPage = 50;
                 const totalPages = Math.ceil(count / countPerPage);
                 const links = [];
+                const filters = [
+                    { text: 'First', value: 0 },
+                    { text: 'Prev', value: idx - 1 },
+                    { text: `${idx + 1}`, value: idx, disabled: true },
+                    { text: 'Next', value: idx + 1 },
+                    { text: 'Last', value: totalPages },
+                ]
+
                 for(let i = 0; i < totalPages; i++){
                     links.push({
                         idx: i,
@@ -70,11 +91,16 @@
                 }
                 return (
                     <div>
-                        <div id='links'>
+                        <div id='header'>
+                            <h1>Acme Users</h1>
+                            <p>{`${count} Results. Page ${currentPage*1 + 1} of ${totalPages}`}</p>
+                        </div>
+                        <div id='buttons'>
                             {
-                                links.map(link => <Link to={`/users/${ link.idx ? link.idx : '' }`} key={ link.idx }>{ link.text }</Link>)
+                                filters.map(filter => <button disabled={filter.disabled ? filter.disabled : ''} onClick={()=>navigate(filter.value)}key={filter.text}>{filter.text}</button>)
                             }
                         </div>
+
                         <div id='users'>
                             <table>
                                 <tbody>
