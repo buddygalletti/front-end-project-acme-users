@@ -26,8 +26,40 @@
                 </div>
             )
         }
+        class Search extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    searchParam: ''
+                }
+                this.handleSubmit = this.handleSubmit.bind(this)
+                this.handleChange = this.handleChange.bind(this)
+            }
 
+            handleSubmit(event) {
+                event.preventDefault();
+                console.log(this)
+                this.props.history.push(`/users/search/${ this.state.searchParam ? `${this.state.searchParam}`: ''}`);
+            }
 
+            handleChange(event) {
+                this.setState({
+                    [event.target.name]: event.target.value
+                });
+                console.log(this.state)
+            }
+
+            render() {
+                const idx = this.props.match.params.idx ? this.props.match.params.idx : '';
+                return (
+                    <form onSubmit = {this.handleSubmit}>
+                        <input type = "text" name="searchParam" value={this.state.searchParam} onChange = {this.handleChange}/>
+                        <button type = "submit" >Submit</button>
+                        <button type = "reset" >Clear</button>
+                    </form>
+                )
+            }
+        }
 
         class Users extends React.Component {
             constructor() {
@@ -106,6 +138,7 @@
                         </div>
 
                         <div id='users'>
+                            <Search history={ this.props.history } match={this.props.match} />
                             <table>
                                 <tbody>
                                     <tr><th>First Name</th><th>Last Name</th><th>Middle Name</th><th>Email</th></tr>
@@ -124,6 +157,8 @@
             }
         }
 
+
+
         class App extends React.Component {
             constructor() {
                 super();
@@ -140,6 +175,7 @@
                         <Route path='/' component={ Nav }></Route>
                         <Route path='/home' component={ Home }></Route>
                         <Route path='/users/:idx?' exact component={ Users }></Route>
+                        <Route path='/users/search/:idx?' exact component={ Search }></Route>
                     </HashRouter>
                 )
             }
