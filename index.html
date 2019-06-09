@@ -69,17 +69,8 @@
             }
 
             async componentDidUpdate(prevProps) {
-                const idx = this.props.match.params.idx || 0;
-                if(prevProps.match.params.idx !== idx){
-                    try {
-                        const res = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users/${idx}`)
-                        this.setState({
-                            users: res.data.users,
-                            currentPage: idx
-                        })
-                    } catch (err) {
-                        console.error(err)
-                    }
+                if(JSON.stringify(prevProps.match.params) !== JSON.stringify(this.props.match.params)){
+                    this.fetchData();
                 }
             }
 
@@ -120,7 +111,7 @@
                         </div>
                         <div id='search'>
                             <form onSubmit = {this.handleSubmit}>
-                                <input type = "text" name="searchParam" value={this.state.searchParam} onChange = {this.handleChange}/>
+                                <input type = "text" name="searchParam" value={this.state.searchParam || ''} onChange = {this.handleChange}/>
                                 <button type = "submit" >Submit</button>
                                 <button type = "reset" >Clear</button>
                             </form>
@@ -146,26 +137,18 @@
 
 
 
-        class App extends React.Component {
-            constructor() {
-                super();
-                this.state = {
-                    numUsers: 0
-                }
-            }
-            render() {
-                return (
-                    <HashRouter>
-                        <div id='header'>
-                            <h1>Acme Users</h1>
-                        </div>
-                        <Route path='/' component={ Nav }></Route>
-                        <Route path='/home' component={ Home }></Route>
-                        <Route path='/users/:idx?' exact component={ Users }></Route>
-                        <Route path='/users/search/:idx?' exact component={ Users }></Route>
-                    </HashRouter>
-                )
-            }
+        const App = () => {
+            return (
+                <HashRouter>
+                    <div id='header'>
+                        <h1>Acme Users</h1>
+                    </div>
+                    <Route path='/' component={ Nav }></Route>
+                    <Route path='/home' component={ Home }></Route>
+                    <Route path='/users/:idx?' exact component={ Users }></Route>
+                    <Route path='/users/search/:search/:idx?' component={ Users }></Route>
+                </HashRouter>
+            )
         }
 
 
