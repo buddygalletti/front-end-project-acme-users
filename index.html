@@ -26,53 +26,46 @@
                 </div>
             )
         }
-        class Search extends React.Component {
+
+        class Users extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
-                    searchParam: ''
+                    users: [],
+                    count: 0,
+                    currentPage: 0,
+                    searchParam: this.props.match.params.search || ''
                 }
-                this.handleSubmit = this.handleSubmit.bind(this)
-                this.handleChange = this.handleChange.bind(this)
+                this.fetchData = this.fetchData.bind(this);
             }
 
-            handleSubmit(event) {
+            navigate = (value) => {
+                this.props.history.push(`/users${ value ? `/${value}`: ''}`);
+            }
+            
+            handleSubmit = (event) => {
                 event.preventDefault();
-                console.log(this)
-                this.props.history.push(`/users/search/${ this.state.searchParam ? `${this.state.searchParam}`: ''}`);
+                this.props.history.push(`/users/search/${this.state.searchParam}`);
             }
 
-            handleChange(event) {
+            handleChange = (event) => {
                 this.setState({
                     [event.target.name]: event.target.value
                 });
                 console.log(this.state)
             }
 
-            render() {
-                const idx = this.props.match.params.idx ? this.props.match.params.idx : '';
-                return (
-                    <form onSubmit = {this.handleSubmit}>
-                        <input type = "text" name="searchParam" value={this.state.searchParam} onChange = {this.handleChange}/>
-                        <button type = "submit" >Submit</button>
-                        <button type = "reset" >Clear</button>
-                    </form>
-                )
-            }
-        }
+            async fetchData(){
+                const idx = this.props.match.params.idx || 0;
+                const searchParam = this.props.match.params.searchParam;
 
-        class Users extends React.Component {
-            constructor() {
-                super();
-                this.state = {
-                    users: [],
-                    count: 0,
-                    currentPage: 0
-                }
-            }
-
-            navigate = (value) => {
-                this.props.history.push(`/users${ value ? `/${value}`: ''}`);
+                const response = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users${ searchParam ? `/search/${searchParam}`: ''}/${ idx }`);
+                const data = response.data;
+                this.setState({
+                    count: data.count,
+                    users: data.users,
+                    searchParam
+                });
             }
 
             async componentDidUpdate(prevProps) {
@@ -90,19 +83,8 @@
                 }
             }
 
-            async componentDidMount() {
-                const idx = this.props.match.params.idx || 0;
-                console.log(idx);
-                try {
-                    const res = await axios.get(`https://acme-users-api-rev.herokuapp.com/api/users/${idx}`)
-                    this.setState({
-                        count: res.data.count,
-                        users: res.data.users,
-                        currentPage: idx
-                    })
-                } catch (err) {
-                    console.error(err)
-                }
+            componentDidMount() {
+                this.fetchData();
             }
 
             render() {
@@ -136,9 +118,14 @@
                                 filters.map(filter => <button disabled={filter.disabled ? filter.disabled : ''} onClick={()=>navigate(filter.value)}key={filter.text}>{filter.text}</button>)
                             }
                         </div>
-
+                        <div id='search'>
+                            <form onSubmit = {this.handleSubmit}>
+                                <input type = "text" name="searchParam" value={this.state.searchParam} onChange = {this.handleChange}/>
+                                <button type = "submit" >Submit</button>
+                                <button type = "reset" >Clear</button>
+                            </form>
+                        </div>
                         <div id='users'>
-                            <Search history={ this.props.history } match={this.props.match} />
                             <table>
                                 <tbody>
                                     <tr><th>First Name</th><th>Last Name</th><th>Middle Name</th><th>Email</th></tr>
@@ -175,7 +162,7 @@
                         <Route path='/' component={ Nav }></Route>
                         <Route path='/home' component={ Home }></Route>
                         <Route path='/users/:idx?' exact component={ Users }></Route>
-                        <Route path='/users/search/:idx?' exact component={ Search }></Route>
+                        <Route path='/users/search/:idx?' exact component={ Users }></Route>
                     </HashRouter>
                 )
             }
